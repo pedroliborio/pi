@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+ <copy file="network.net.xml">
+ </copy>
+ <copy file="100_24.rou.xml">
+ </copy>
+ <copy file="100_24.sumo.cfg" type="config">
+ </copy>
+</launch>
