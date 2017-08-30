@@ -16,7 +16,7 @@ config = 'General'
 scenario = 'MyScenario'
 seeds = 10
 totVehicles = [100,200,300,400]
-filesPath = 'results/'
+filesPath = '../simulations/results/'
 
 listCoverage = [[] for n in range(len(totVehicles))]
 listTransmissions = [[] for n in range(len(totVehicles))]
