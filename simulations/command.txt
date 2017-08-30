@@ -1,0 +1,3 @@
+Para executar, entre na pasta simulations via terminal e digite:
+
+../src/PI -u Cmdenv -r 0..40 -n .:../src:../../veins/examples/veins:../../veins/src/veins --image-path=../../veins/images -l ../../veins/src/veins --debug-on-errors=false omnetpp.ini
