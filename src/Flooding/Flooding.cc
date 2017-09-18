@@ -31,6 +31,8 @@ void Flooding::initialize(int stage) {
         isFirstMessage = true;
         reached = false;
         msgsCounter = 0;
+
+        delaySum=0;
         if(isSource){
             scheduleAt(computeAsynchronousSendingTime(simTime() + wsmInterval,type_SCH), sendWSMEvt);
         }
@@ -40,10 +42,11 @@ void Flooding::initialize(int stage) {
 
     }
 }
+
 void Flooding::finish() {
     BaseWaveApplLayer::finish();
     //statistics recording goes here
-
+    recordScalar("delaySum",(delaySum));
 }
 
 void Flooding::onBSM(BasicSafetyMessage* bsm) {
@@ -55,15 +58,20 @@ void Flooding::onBSM(BasicSafetyMessage* bsm) {
 void Flooding::onWSM(WaveShortMessage* wsm) {
     //Your application has received a data message from another car or RSU
     //code for handling the message goes here, see TraciDemo11p.cc for examples
-    if(!reached){
-        findHost()->getDisplayString().updateWith("r=16,green");
-        reached = true;
-        sendDown(wsm->dup());
-    }
 
-    /*if(!isSource){
-        msgsCounter++;
-    }*/
+    //if(!AlreadyReceivedMSG(wsm->getSerial())){
+        //Only for graphics purpose
+        if(!reached){
+            findHost()->getDisplayString().updateWith("r=16,green");
+            reached = true;
+        }
+        sendDown(wsm->dup());
+        //listIds.push_back(wsm->getSerial());
+    //}
+
+    //std::cout << simTime() - wsm->getTimestamp() << endl;
+
+    delaySum += simTime().dbl() - wsm->getTimestamp().dbl();
 }
 
 void Flooding::onWSA(WaveServiceAdvertisment* wsa) {
@@ -76,6 +84,10 @@ void Flooding::handleSelfMsg(cMessage* msg) {
     switch (msg->getKind()) {
         case SEND_WSM_EVT: {
             if ((msgsCounter < numMsgs) and isSource) {
+                //Vehiculo para e inicia disseminação
+
+
+
                 WaveShortMessage* wsm = new WaveShortMessage();
                 populateWSM(wsm);
                 sendDown(wsm);
@@ -83,10 +95,18 @@ void Flooding::handleSelfMsg(cMessage* msg) {
                     findHost()->getDisplayString().updateWith("r=16,green");
                     reached = true;
                     isFirstMessage = false;
+
+                    //speedBeforeStopped = mobility->getCurrentSpeed().length();
+                    if(simTime()==10.0){
+                        traciVehicle->setSpeed(0.0);
+                    }
                 }
                 msgsCounter++;    //Increment number of messages sent
                 scheduleAt(simTime() + wsmInterval, sendWSMEvt);
                 break;
+            }
+            else{
+                traciVehicle->setSpeed(5.0);
             }
 
         }
@@ -95,7 +115,7 @@ void Flooding::handleSelfMsg(cMessage* msg) {
                 DBG_APP << "APP: Error: Got Self Message of unknown kind! Name: "
                                << msg->getName() << endl;
             break;
-    }
+        }
     }
     //BaseWaveApplLayer::handleSelfMsg(msg);
     //this method is for self messages (mostly timers)
@@ -130,5 +150,14 @@ void Flooding::handlePositionUpdate(cObject* obj) {
     //the vehicle has moved. Code that reacts to new positions goes here.
     //member variables such as currentPosition and currentSpeed are updated in the parent class
 
+}
+
+bool Flooding::AlreadyReceivedMSG(int serialIDMSG){
+    for(std::list<int>::iterator it=listIds.begin(); it!= listIds.end(); ++it){
+        if(*it == serialIDMSG){
+            return true;
+        }
+    }
+    return false;
 }
 

@@ -37,6 +37,7 @@ protected:
 
     virtual void handleSelfMsg(cMessage* msg);
     virtual void handlePositionUpdate(cObject* obj);
+    bool AlreadyReceivedMSG(int serialIDMSG);
 
 protected:
     u_int32_t numMsgs;
@@ -48,6 +49,9 @@ protected:
     bool isFirstMessage;
     bool reached;
     cMessage* sendWSMEvt;
+    double delaySum;
+    std::list<int> listIds;
+    double speedBeforeStopped;
 };
 
 #endif
